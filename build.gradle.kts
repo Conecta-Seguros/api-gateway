@@ -30,6 +30,9 @@ dependencies {
 	// Annotations and utilities
 	implementation("org.projectlombok:lombok")
 
+	// Dotenv support
+	implementation("io.github.cdimascio:dotenv-java")
+
 	// Development dependencies
 	"developmentOnly"("org.springframework.boot:spring-boot-devtools")
 
@@ -41,6 +44,9 @@ dependencies {
 dependencyManagement {
 	imports {
 		mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
+	}
+	dependencies {
+		dependency("io.github.cdimascio:dotenv-java:3.2.0")
 	}
 }
 
