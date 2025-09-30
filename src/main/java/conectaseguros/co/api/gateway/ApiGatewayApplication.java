@@ -11,7 +11,7 @@ import java.util.Objects;
 @EnableDiscoveryClient
 public class ApiGatewayApplication {
 
-	public static void main(String[] args) {
+	static void main(String[] args) {
 
 		Dotenv dotenv = Dotenv.configure()
 				.directory("./api-gateway")

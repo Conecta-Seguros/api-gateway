@@ -1,6 +1,6 @@
 plugins {
 	java
-	id("org.springframework.boot") version "3.5.3"
+	id("org.springframework.boot") version "3.5.6"
 	id("io.spring.dependency-management") version "1.1.7"
 }
 val springCloudVersion by extra("2025.0.0")
@@ -10,7 +10,7 @@ version = "0.0.1-SNAPSHOT"
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(24)
+		languageVersion = JavaLanguageVersion.of(25)
 	}
 }
 
@@ -28,6 +28,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 	implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.security:spring-security-oauth2-jose")
+    implementation("org.springframework.boot:spring-boot-configuration-metadata")
 
 	// Annotations and utilities
 	implementation("org.projectlombok:lombok")
@@ -43,13 +44,15 @@ dependencies {
 	testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
+
 dependencyManagement {
 	imports {
 		mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
 	}
 	dependencies {
 		dependency("io.github.cdimascio:dotenv-java:3.2.0")
-        dependency("org.springframework.security:spring-security-oauth2-jose:7.0.0-M2")
+        dependency("org.springframework.boot:spring-boot-configuration-metadata:3.5.6")
+        dependency("org.springframework.security:spring-security-oauth2-jose:7.0.0-M3")
 	}
 }
 

@@ -6,8 +6,8 @@ El API Gateway es un componente esencial de la plataforma de seguros Conecta Seg
 
 ## Tecnologías
 
-- Java 24
-- Spring Boot 3.5.3
+- Java 25
+- Spring Boot 3.5.6
 - Spring Cloud Gateway
 - Gradle
 - Netflix Eureka (Service Discovery)
