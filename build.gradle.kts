@@ -8,6 +8,10 @@ val springCloudVersion by extra("2025.0.0")
 group = "conectaseguros.co"
 version = "0.0.1-SNAPSHOT"
 
+springBoot {
+    mainClass.set("conectaseguros.co.api.gateway.ApiGatewayApplication")
+}
+
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(25)
@@ -36,6 +40,8 @@ dependencies {
 	// Dotenv support
 	implementation("io.github.cdimascio:dotenv-java")
 
+    implementation("io.netty:netty-all")
+
 	// Development dependencies
 	"developmentOnly"("org.springframework.boot:spring-boot-devtools")
 
@@ -53,6 +59,7 @@ dependencyManagement {
 		dependency("io.github.cdimascio:dotenv-java:3.2.0")
         dependency("org.springframework.boot:spring-boot-configuration-metadata:3.5.6")
         dependency("org.springframework.security:spring-security-oauth2-jose:7.0.0-M3")
+        dependency("io.netty:netty-all:4.2.6.Final")
 	}
 }
 
