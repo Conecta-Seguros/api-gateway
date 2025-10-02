@@ -40,7 +40,8 @@ dependencies {
 	// Dotenv support
 	implementation("io.github.cdimascio:dotenv-java")
 
-    implementation("io.netty:netty-all")
+    // Caffeine for caching
+    implementation("com.github.ben-manes.caffeine:caffeine")
 
 	// Development dependencies
 	"developmentOnly"("org.springframework.boot:spring-boot-devtools")
@@ -59,7 +60,7 @@ dependencyManagement {
 		dependency("io.github.cdimascio:dotenv-java:3.2.0")
         dependency("org.springframework.boot:spring-boot-configuration-metadata:3.5.6")
         dependency("org.springframework.security:spring-security-oauth2-jose:7.0.0-M3")
-        dependency("io.netty:netty-all:4.2.6.Final")
+        dependency("com.github.ben-manes.caffeine:caffeine:3.2.2")
 	}
 }
 
