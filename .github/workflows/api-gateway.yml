@@ -210,7 +210,7 @@ jobs:
             echo "🛑 Stop and remove containers..."
             docker compose -f docker-compose-gateway.yml down
             
-            echo "🚀 Start Eureka cluster (both peers simultaneously)..."
+            echo "🚀 Start Api Gateway cluster..."
             docker compose -f docker-compose-gateway.yml up -d
             
             echo "⏳ Waiting for services to be healthy..."
@@ -254,7 +254,7 @@ jobs:
           script: |
             echo "🔍 Checking Gateway health..."
             for i in {1..30}; do
-              if docker exec conecta-eureka-peer1 wget --spider -q http://localhost:8080/actuator/health 2>/dev/null; then
+              if docker exec conecta-gateway wget --spider -q http://localhost:8080/actuator/health 2>/dev/null; then
                 echo "✅ Gateway is healthy!"
                 break
               fi
