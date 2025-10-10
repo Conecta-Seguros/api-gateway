@@ -101,7 +101,7 @@ COPY --from=extractor --chown=spring:spring /extract/extracted/application/ ./
 USER spring:spring
 
 # Expose API Gateway port
-EXPOSE 8080
+EXPOSE 8088
 
 # Add comprehensive health check for API Gateway
 # Note: API Gateway health check might require longer start period due to Eureka registration
