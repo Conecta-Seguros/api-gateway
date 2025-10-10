@@ -236,7 +236,7 @@ jobs:
             echo "🧹 Cleaning up old images..."
             docker image prune -af --filter "until=24h" || true
             
-            if [ "$HEALTH_CHECK_PASSED" = true ] then
+            if [ "$HEALTH_CHECK_PASSED" = true ]; then
               echo ""
               echo "✅ Api Gateway deployed successfully!"
             else
