@@ -43,7 +43,10 @@ dependencies {
     // Caffeine for caching
     implementation("com.github.ben-manes.caffeine:caffeine")
 
-	// Development dependencies
+    // Resilience4j for circuit breaking
+    implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j")
+
+    // Development dependencies
 	"developmentOnly"("org.springframework.boot:spring-boot-devtools")
 
 	// Testing dependencies
