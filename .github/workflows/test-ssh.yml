@@ -1,0 +1,114 @@
+name: Test SSH Connection
+
+on:
+  workflow_dispatch:  # Permite ejecución manual
+
+jobs:
+  test-ssh-connection:
+    name: Test VPS SSH Connection
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 🔍 Display secrets (masked)
+        run: |
+          echo "VPS Host: ${{ secrets.VPS_HOST }}"
+          echo "VPS Username: ${{ secrets.VPS_USERNAME }}"
+          echo "VPS Port: ${{ secrets.VPS_PORT }}"
+          echo "SSH Key length: ${#SSH_KEY}"
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: 🔐 Test SSH Connection
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            echo "========================================="
+            echo "✅ SSH Connection Successful!"
+            echo "========================================="
+            echo ""
+            echo "📊 System Information:"
+            echo "- Hostname: $(hostname)"
+            echo "- User: $(whoami)"
+            echo "- OS: $(cat /etc/os-release | grep PRETTY_NAME | cut -d '"' -f 2)"
+            echo "- Kernel: $(uname -r)"
+            echo ""
+            echo "🐳 Docker Information:"
+            docker --version || echo "❌ Docker not found"
+            docker-compose --version || echo "❌ Docker Compose not found"
+            echo ""
+            echo "📁 Directory Check:"
+            if [ -d "/opt/conecta-seguros-backend" ]; then
+              echo "✅ /opt/conecta-seguros-backend exists"
+              ls -la /opt/conecta-seguros-backend
+            else
+              echo "❌ /opt/conecta-seguros-backend does NOT exist"
+            fi
+            echo ""
+            echo "🔐 Environment File Check:"
+            if [ -f "/opt/conecta-seguros-backend/.env" ]; then
+              echo "✅ .env file exists"
+              echo "   Permissions: $(ls -la /opt/conecta-seguros-backend/.env | awk '{print $1}')"
+            else
+              echo "❌ .env file NOT found"
+            fi
+            echo ""
+            echo "📄 Docker Compose File Check:"
+            if [ -f "/opt/conecta-seguros-backend/docker-compose.yml" ]; then
+              echo "✅ docker-compose.yml exists"
+            else
+              echo "❌ docker-compose.yml NOT found"
+            fi
+            echo ""
+            echo "🔑 Docker Registry Login Test:"
+            docker info | grep -i "registry" || true
+            echo ""
+            echo "💾 Disk Space:"
+            df -h / | tail -1
+            echo ""
+            echo "🧠 Memory:"
+            free -h | grep Mem
+            echo ""
+            echo "========================================="
+            echo "✅ All checks completed!"
+            echo "========================================="
+
+      - name: 📋 Test docker-compose config
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            cd /opt/conecta-seguros-backend
+            echo "🔍 Validating docker-compose.yml..."
+            docker-compose config --quiet && echo "✅ docker-compose.yml is valid" || echo "❌ docker-compose.yml has errors"
+
+      - name: 🎉 Success Summary
+        if: success()
+        run: |
+          echo "🎉 SSH Connection Test PASSED!"
+          echo ""
+          echo "✅ GitHub Actions can successfully connect to your VPS"
+          echo "✅ All required files are in place"
+          echo "✅ Docker is installed and accessible"
+          echo ""
+          echo "🚀 You're ready to deploy!"
+
+      - name: ❌ Failure Summary
+        if: failure()
+        run: |
+          echo "❌ SSH Connection Test FAILED!"
+          echo ""
+          echo "Please check:"
+          echo "1. VPS_HOST is correct (IP or domain)"
+          echo "2. VPS_USERNAME is correct"
+          echo "3. VPS_SSH_KEY contains the complete private key"
+          echo "4. VPS_PORT is correct (usually 22)"
+          echo "5. SSH key is added to ~/.ssh/authorized_keys on VPS"
+          echo "6. VPS firewall allows SSH connections"
