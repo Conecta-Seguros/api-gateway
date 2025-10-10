@@ -219,19 +219,19 @@ jobs:
             echo "🏥 Health Checks..."
             HEALTH_CHECK_PASSED=false
             
-            if docker exec conecta-gateway wget -q --spider http://localhost:8080/actuator/health 2>/dev/null; then
+            if docker exec conecta-api-gateway wget -q --spider http://localhost:8080/actuator/health 2>/dev/null; then
               echo "✅ Gateway is healthy!"
               HEALTH_CHECK_PASSED=true
             else
               echo "⚠️ Gateway health check failed"
-              docker logs conecta-gateway --tail 30
+              docker logs conecta-api-gateway --tail 30
             fi
             
             echo "📊 Cluster Status:"
-            docker ps --filter name=conecta-gateway
+            docker ps --filter name=conecta-api-gateway
             
             echo "🔍 Registered Services:"
-            docker exec conecta-gateway wget -qO- http://localhost:8080/actuator/health 2>/dev/null | grep -o '<name>.*</name>' | head -5 || echo "No services registered yet"
+            docker exec conecta-api-gateway wget -qO- http://localhost:8080/actuator/health 2>/dev/null | grep -o '<name>.*</name>' | head -5 || echo "No services registered yet"
             
             echo "🧹 Cleaning up old images..."
             docker image prune -af --filter "until=24h" || true
@@ -254,7 +254,7 @@ jobs:
           script: |
             echo "🔍 Checking Gateway health..."
             for i in {1..30}; do
-              if docker exec conecta-gateway wget --spider -q http://localhost:8080/actuator/health 2>/dev/null; then
+              if docker exec conecta-api-gateway wget --spider -q http://localhost:8080/actuator/health 2>/dev/null; then
                 echo "✅ Gateway is healthy!"
                 break
               fi
@@ -263,7 +263,7 @@ jobs:
             done
             
             echo "📊 Deployment Status:"
-            docker ps --filter name=conecta-gateway
+            docker ps --filter name=conecta-api-gateway
 
       - name: 📢 Deployment notification
         if: always()
