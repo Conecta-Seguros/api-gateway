@@ -52,10 +52,13 @@ dependencies {
     // Development dependencies
 	"developmentOnly"("org.springframework.boot:spring-boot-devtools")
 
+    // Monitoring dependencies
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+
 	// Testing dependencies
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 dependencyManagement {
