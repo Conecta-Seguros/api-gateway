@@ -1,4 +1,4 @@
-name: Discovery Server CI/CD
+name: Api Gateway CI/CD
 
 on:
   push:
