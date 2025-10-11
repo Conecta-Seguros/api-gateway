@@ -46,6 +46,9 @@ dependencies {
     // Resilience4j for circuit breaking
     implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j")
 
+    // Redis
+    implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
+
     // Development dependencies
 	"developmentOnly"("org.springframework.boot:spring-boot-devtools")
 
