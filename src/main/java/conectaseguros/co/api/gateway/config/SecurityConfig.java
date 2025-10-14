@@ -2,7 +2,6 @@ package conectaseguros.co.api.gateway.config;
 
 import java.util.Arrays;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,10 +12,8 @@ import org.springframework.security.web.server.authentication.RedirectServerAuth
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
-import reactor.core.publisher.Mono;
 
 @Configuration
-@Slf4j
 public class SecurityConfig {
 
     @Bean
@@ -37,12 +34,6 @@ public class SecurityConfig {
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(Customizer.withDefaults())
-                )
-                .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint((exchange, ex) -> {
-                            log.error("Authentication error: ", ex);
-                            return Mono.error(ex);
-                        })
                 )
                 .build();
     }
