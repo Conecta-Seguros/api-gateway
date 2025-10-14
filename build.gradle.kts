@@ -40,6 +40,9 @@ dependencies {
 	// Dotenv support
 	implementation("io.github.cdimascio:dotenv-java")
 
+    // Annotations
+    implementation("org.jetbrains:annotations")
+
     // Caffeine for caching
     implementation("com.github.ben-manes.caffeine:caffeine")
 
@@ -69,6 +72,7 @@ dependencyManagement {
 		dependency("io.github.cdimascio:dotenv-java:3.2.0")
         dependency("org.springframework.boot:spring-boot-configuration-metadata:3.5.6")
         dependency("org.springframework.security:spring-security-oauth2-jose:7.0.0-M3")
+        dependency("org.jetbrains:annotations:26.0.2")
         dependency("com.github.ben-manes.caffeine:caffeine:3.2.2")
 	}
 }
