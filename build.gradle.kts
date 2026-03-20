@@ -1,12 +1,13 @@
 plugins {
 	java
-	id("org.springframework.boot") version "3.5.6"
+	id("org.springframework.boot") version "4.0.3"
 	id("io.spring.dependency-management") version "1.1.7"
+	jacoco
 }
-val springCloudVersion by extra("2025.0.0")
+val springCloudVersion by extra("2025.1.1")
 
 group = "conectaseguros.co"
-version = "0.0.1-SNAPSHOT"
+version = "1.0.0"
 
 springBoot {
     mainClass.set("conectaseguros.co.api.gateway.ApiGatewayApplication")
@@ -70,13 +71,42 @@ dependencyManagement {
 	}
 	dependencies {
 		dependency("io.github.cdimascio:dotenv-java:3.2.0")
-        dependency("org.springframework.boot:spring-boot-configuration-metadata:3.5.6")
-        dependency("org.springframework.security:spring-security-oauth2-jose:7.0.0-M3")
-        dependency("org.jetbrains:annotations:26.0.2")
-        dependency("com.github.ben-manes.caffeine:caffeine:3.2.2")
+        dependency("org.springframework.boot:spring-boot-configuration-metadata:4.0.3")
+        dependency("org.springframework.security:spring-security-oauth2-jose:7.0.4")
+        dependency("org.jetbrains:annotations:26.1.0")
+        dependency("com.github.ben-manes.caffeine:caffeine:3.2.3")
 	}
+}
+
+jacoco {
+	toolVersion = "0.8.14"
+}
+
+tasks.test {
+	finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+	dependsOn(tasks.test)
+	reports {
+		xml.required = true
+		html.required = true
+	}
+}
+
+val toolchainVersion = java.toolchain.languageVersion.get().asInt()
+val jvmCompatArgs = buildList {
+	add("-Xshare:off")
+	if (toolchainVersion >= 23) {
+		add("--sun-misc-unsafe-memory-access=allow")
+	}
+}
+
+tasks.bootRun {
+	jvmArgs(jvmCompatArgs)
 }
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+	jvmArgs(jvmCompatArgs)
 }
