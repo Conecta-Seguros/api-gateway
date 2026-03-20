@@ -6,7 +6,7 @@ updates:
 
     schedule:
       interval: weekly
-      day: Monday
+      day: monday
       time: "09:00"
       timezone: "America/Bogota"
 
