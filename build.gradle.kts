@@ -35,9 +35,6 @@ dependencies {
     implementation("org.springframework.security:spring-security-oauth2-jose")
     implementation("org.springframework.boot:spring-boot-configuration-metadata")
 
-	// Annotations and utilities
-	implementation("org.projectlombok:lombok")
-
 	// Dotenv support
 	implementation("io.github.cdimascio:dotenv-java")
 
@@ -53,6 +50,10 @@ dependencies {
     // Redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
 
+	// Annotations and utilities
+	annotationProcessor("org.projectlombok:lombok")
+	compileOnly("org.projectlombok:lombok")
+
     // Development dependencies
 	"developmentOnly"("org.springframework.boot:spring-boot-devtools")
 
@@ -61,7 +62,10 @@ dependencies {
 
 	// Testing dependencies
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("io.projectreactor:reactor-test")
 	testImplementation("org.springframework.security:spring-security-test")
+	testAnnotationProcessor("org.projectlombok:lombok")
+	testCompileOnly("org.projectlombok:lombok")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
