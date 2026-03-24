@@ -62,13 +62,16 @@ public class SecurityHeadersGlobalFilter implements GlobalFilter, Ordered {
                 .request(sanitizedRequest)
                 .build();
 
-        return chain.filter(mutatedExchange).then(Mono.fromRunnable(() -> {
-            // --- POST: add security headers to response ---
+        // --- POST: register before response headers are committed ---
+        mutatedExchange.getResponse().beforeCommit(() -> {
             ServerHttpResponse response = mutatedExchange.getResponse();
             response.getHeaders().putIfAbsent("X-Content-Type-Options", List.of("nosniff"));
             response.getHeaders().putIfAbsent("X-XSS-Protection", List.of("0"));
             response.getHeaders().putIfAbsent("Content-Security-Policy", List.of(CSP_POLICY));
-        }));
+            return Mono.empty();
+        });
+
+        return chain.filter(mutatedExchange);
     }
 
     @Override
