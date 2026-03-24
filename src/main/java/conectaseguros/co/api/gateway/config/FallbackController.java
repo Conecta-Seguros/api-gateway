@@ -3,6 +3,7 @@ package conectaseguros.co.api.gateway.config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,7 +21,7 @@ import java.util.Map;
  * {@code forward:/fallback/service-unavailable}.
  *
  * <p>This provides a consistent JSON error response to clients instead of a raw
- * 503/502 with no body, which improves the frontend developer experience and
+ * 503/502 with nobody, which improves the frontend developer experience and
  * allows proper error handling on the client side.
  */
 @Slf4j
@@ -34,15 +35,15 @@ public class FallbackController {
                       RequestMethod.PATCH, RequestMethod.DELETE},
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public Mono<Map<String, Object>> serviceUnavailable(ServerWebExchange exchange) {
+    public Mono<ResponseEntity<Map<String, Object>>> serviceUnavailable(ServerWebExchange exchange) {
         String originalUri = exchange.getRequest().getURI().getPath();
         log.warn("Circuit breaker fallback triggered for path: {}", originalUri);
 
-        return Mono.just(Map.of(
+        return Mono.just(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of(
                 "message", "The requested service is temporarily unavailable. Please try again later.",
                 "timestamp", Instant.now().toString(),
                 "status", HttpStatus.SERVICE_UNAVAILABLE.value(),
                 "path", originalUri
-        ));
+        )));
     }
 }
