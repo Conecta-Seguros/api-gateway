@@ -141,6 +141,9 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+          build-args: |
+            JAVA_VERSION=${{ env.JAVA_VERSION }}
+            APP_VERSION=${{ steps.meta.outputs.version }}
           labels: |
             ${{ steps.meta.outputs.labels }}
             org.opencontainers.image.title=Api Gateway
