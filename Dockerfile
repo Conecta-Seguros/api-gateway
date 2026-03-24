@@ -31,7 +31,8 @@ COPY --from=builder /build/build/libs/*.jar application.jar
 RUN java -Djarmode=layertools -jar application.jar extract --destination layers/ && \
     test -d layers/dependencies && \
     test -d layers/spring-boot-loader && \
-    test -d layers/application
+    test -d layers/application && \
+    mkdir -p layers/snapshot-dependencies
 
 # ============================================
 # STAGE 3: Runtime
@@ -84,6 +85,7 @@ HEALTHCHECK --interval=30s \
 
 # -- Environment --
 ENV JAVA_OPTS="" \
+    SPRING_PROFILES_ACTIVE=k8s-ha \
     SPRING_MAIN_CLOUD_PLATFORM=kubernetes
 
 # -- JVM Defaults (optimized for reactive/Netty workloads) --
