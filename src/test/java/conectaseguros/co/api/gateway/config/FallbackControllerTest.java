@@ -3,6 +3,7 @@ package conectaseguros.co.api.gateway.config;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -28,7 +29,7 @@ class FallbackControllerTest {
     void postReturnsFallbackResponse() {
         webTestClient.post().uri("/fallback/service-unavailable")
                 .exchange()
-                .expectStatus().isOk()
+                .expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE)
                 .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
                 .expectBody()
                 .jsonPath("$.message").isEqualTo(
@@ -43,7 +44,7 @@ class FallbackControllerTest {
     void putReturnsFallbackResponse() {
         webTestClient.put().uri("/fallback/service-unavailable")
                 .exchange()
-                .expectStatus().isOk()
+                .expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE)
                 .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
                 .expectBody()
                 .jsonPath("$.message").isNotEmpty()
@@ -56,7 +57,7 @@ class FallbackControllerTest {
     void patchReturnsFallbackResponse() {
         webTestClient.patch().uri("/fallback/service-unavailable")
                 .exchange()
-                .expectStatus().isOk()
+                .expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE)
                 .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
                 .expectBody()
                 .jsonPath("$.message").isNotEmpty()
@@ -69,7 +70,7 @@ class FallbackControllerTest {
     void deleteReturnsFallbackResponse() {
         webTestClient.delete().uri("/fallback/service-unavailable")
                 .exchange()
-                .expectStatus().isOk()
+                .expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE)
                 .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
                 .expectBody()
                 .jsonPath("$.message").isNotEmpty()
@@ -82,7 +83,7 @@ class FallbackControllerTest {
     void getReturnsFallbackResponse() {
         webTestClient.get().uri("/fallback/service-unavailable")
                 .exchange()
-                .expectStatus().isOk()
+                .expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE)
                 .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
                 .expectBody()
                 .jsonPath("$.message").isEqualTo(
@@ -97,7 +98,7 @@ class FallbackControllerTest {
     void responseBodyStructure() {
         webTestClient.get().uri("/fallback/service-unavailable")
                 .exchange()
-                .expectStatus().isOk()
+                .expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE)
                 .expectBody()
                 .jsonPath("$.message").isNotEmpty()
                 .jsonPath("$.timestamp").isNotEmpty()

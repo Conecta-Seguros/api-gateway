@@ -35,8 +35,11 @@ class SecurityHeadersGlobalFilterTest {
     void setUp() {
         filter = new SecurityHeadersGlobalFilter();
         chain = mock(GatewayFilterChain.class);
-        // Chain always completes successfully
-        when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
+        // Chain commits the response so beforeCommit callbacks are triggered
+        when(chain.filter(any(ServerWebExchange.class))).thenAnswer(invocation -> {
+            ServerWebExchange ex = invocation.getArgument(0);
+            return ex.getResponse().setComplete();
+        });
     }
 
     @Nested

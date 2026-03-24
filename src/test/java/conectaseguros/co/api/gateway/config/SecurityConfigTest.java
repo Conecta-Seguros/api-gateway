@@ -94,7 +94,9 @@ class SecurityConfigTest {
         void fallbackEndpointIsPublic() {
             webTestClient().post().uri("/fallback/service-unavailable")
                     .exchange()
-                    .expectStatus().isOk();
+                    .expectStatus().value(status ->
+                            assertThat(status).isNotIn(401, 403)
+                    );
         }
     }
 
