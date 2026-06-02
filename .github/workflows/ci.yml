@@ -48,7 +48,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
         with:
           fetch-depth: 0
 
@@ -59,7 +59,7 @@ jobs:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6.1.0
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/develop' }}
 
@@ -74,7 +74,7 @@ jobs:
         continue-on-error: false
 
       - name: Test Report (annotations on PR)
-        uses: dorny/test-reporter@v2.5.0
+        uses: dorny/test-reporter@v3.0.0
         if: always() && github.event_name == 'pull_request'
         with:
           name: "JUnit Results"
@@ -82,7 +82,7 @@ jobs:
           reporter: java-junit
 
       - name: Coverage Report (comment on PR)
-        uses: Madrapps/jacoco-report@v1.7.2
+        uses: Madrapps/jacoco-report@v1.8.0
         if: github.event_name == 'pull_request'
         with:
           paths: build/reports/jacoco/test/jacocoTestReport.xml
@@ -96,7 +96,7 @@ jobs:
         run: ./gradlew bootJar --no-daemon -x test
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v6.0.0
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: build-output
           path: |
@@ -118,10 +118,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
 
       - name: Trivy vulnerability scan
-        uses: aquasecurity/trivy-action@0.34.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: "fs"
           scan-ref: "."
@@ -151,10 +151,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
 
       - name: Review new dependencies
-        uses: actions/dependency-review-action@v4.8.2
+        uses: actions/dependency-review-action@v5.0.0
         with:
           fail-on-severity: critical
           comment-summary-in-pr: always
