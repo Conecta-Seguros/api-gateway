@@ -1,6 +1,7 @@
 package conectaseguros.co.api.gateway.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockJwt;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -134,6 +136,104 @@ class SecurityConfigTest {
             webTestClient().get().uri("/api/v1/clients")
                     .exchange()
                     .expectStatus().isUnauthorized();
+        }
+    }
+
+    @Nested
+    @DisplayName("Role-based access control")
+    class RoleBasedAccessControl {
+
+        @Test
+        @DisplayName("CONSULTANT: POST /api/v1/** returns 403 Forbidden")
+        void consultantCannotPost() {
+            webTestClient()
+                    .mutateWith(mockJwt().authorities(new SimpleGrantedAuthority("ROLE_CONSULTANT")))
+                    .post().uri("/api/v1/clients")
+                    .exchange()
+                    .expectStatus().isForbidden();
+        }
+
+        @Test
+        @DisplayName("CONSULTANT: PUT /api/v1/** returns 403 Forbidden")
+        void consultantCannotPut() {
+            webTestClient()
+                    .mutateWith(mockJwt().authorities(new SimpleGrantedAuthority("ROLE_CONSULTANT")))
+                    .put().uri("/api/v1/clients/1")
+                    .exchange()
+                    .expectStatus().isForbidden();
+        }
+
+        @Test
+        @DisplayName("CONSULTANT: DELETE /api/v1/** returns 403 Forbidden")
+        void consultantCannotDelete() {
+            webTestClient()
+                    .mutateWith(mockJwt().authorities(new SimpleGrantedAuthority("ROLE_CONSULTANT")))
+                    .delete().uri("/api/v1/clients/1")
+                    .exchange()
+                    .expectStatus().isForbidden();
+        }
+
+        @Test
+        @DisplayName("CONSULTANT: GET /api/v1/** is not blocked by security")
+        void consultantCanGet() {
+            webTestClient()
+                    .mutateWith(mockJwt().authorities(new SimpleGrantedAuthority("ROLE_CONSULTANT")))
+                    .get().uri("/api/v1/clients")
+                    .exchange()
+                    .expectStatus().value(status ->
+                            assertThat(status).isNotIn(401, 403)
+                    );
+        }
+
+        @Test
+        @DisplayName("ADMIN: POST /api/v1/** is not blocked by security")
+        void adminCanPost() {
+            webTestClient()
+                    .mutateWith(mockJwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                    .post().uri("/api/v1/clients")
+                    .exchange()
+                    .expectStatus().value(status ->
+                            assertThat(status).isNotIn(401, 403)
+                    );
+        }
+
+        @Test
+        @DisplayName("CARTERA: POST /api/v1/** is not blocked by security")
+        void carteraCanPost() {
+            webTestClient()
+                    .mutateWith(mockJwt().authorities(new SimpleGrantedAuthority("ROLE_CARTERA")))
+                    .post().uri("/api/v1/clients")
+                    .exchange()
+                    .expectStatus().value(status ->
+                            assertThat(status).isNotIn(401, 403)
+                    );
+        }
+
+        @Test
+        @DisplayName("CONSULTANT: 403 response has structured JSON body")
+        void consultantForbiddenHasStructuredBody() {
+            webTestClient()
+                    .mutateWith(mockJwt().authorities(new SimpleGrantedAuthority("ROLE_CONSULTANT")))
+                    .post().uri("/api/v1/clients")
+                    .exchange()
+                    .expectStatus().isForbidden()
+                    .expectBody()
+                    .jsonPath("$.message").isEqualTo("You do not have permission to perform this action.")
+                    .jsonPath("$.status").isEqualTo(403)
+                    .jsonPath("$.timestamp").isNotEmpty()
+                    .jsonPath("$.path").isEqualTo("/api/v1/clients");
+        }
+
+        @Test
+        @DisplayName("CONSULTANT: 403 response includes CORS header when Origin is present")
+        void consultantForbiddenHasCorsHeader() {
+            webTestClient()
+                    .mutateWith(mockJwt().authorities(new SimpleGrantedAuthority("ROLE_CONSULTANT")))
+                    .post().uri("/api/v1/clients")
+                    .header("Origin", "http://localhost:3000")
+                    .exchange()
+                    .expectStatus().isForbidden()
+                    .expectHeader().exists("Access-Control-Allow-Origin");
         }
     }
 }
