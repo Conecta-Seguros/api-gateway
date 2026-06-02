@@ -108,9 +108,11 @@ val jvmCompatArgs = buildList {
 
 tasks.bootRun {
 	jvmArgs(jvmCompatArgs)
+	environment("SPRING_PROFILES_ACTIVE", "dev")
 }
 
 tasks.withType<Test> {
 	useJUnitPlatform()
 	jvmArgs(jvmCompatArgs)
+	environment("SPRING_PROFILES_ACTIVE", "test")
 }
