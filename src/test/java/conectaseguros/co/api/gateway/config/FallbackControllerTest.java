@@ -25,7 +25,7 @@ class FallbackControllerTest {
     }
 
     @Test
-    @DisplayName("POST /fallback/service-unavailable returns 200 with 503-status JSON body")
+    @DisplayName("POST /fallback/service-unavailable returns 503 SERVICE_UNAVAILABLE with JSON body")
     void postReturnsFallbackResponse() {
         webTestClient.post().uri("/fallback/service-unavailable")
                 .exchange()

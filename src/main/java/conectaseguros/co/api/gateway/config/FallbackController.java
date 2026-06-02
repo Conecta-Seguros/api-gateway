@@ -21,7 +21,7 @@ import java.util.Map;
  * {@code forward:/fallback/service-unavailable}.
  *
  * <p>This provides a consistent JSON error response to clients instead of a raw
- * 503/502 with nobody, which improves the frontend developer experience and
+ * 503/502 with no body, which improves the frontend developer experience and
  * allows proper error handling on the client side.
  */
 @Slf4j
