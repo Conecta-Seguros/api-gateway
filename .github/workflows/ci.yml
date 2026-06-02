@@ -1,0 +1,162 @@
+name: "CI: Build & Test"
+
+on:
+  pull_request:
+    branches: [develop, main]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - ".github/dependabot.yml"
+      - "infrastructure/**"
+
+  push:
+    branches: [develop, main]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - ".github/dependabot.yml"
+      - "infrastructure/**"
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: "25"
+  JAVA_DISTRIBUTION: "temurin"
+  GRADLE_OPTS: >-
+    -Dorg.gradle.daemon=false
+    -Dorg.gradle.parallel=true
+    -Dorg.gradle.caching=true
+
+permissions:
+  contents: read
+
+jobs:
+  # ============================================
+  # Build + Test + Coverage
+  # ============================================
+  build-test:
+    name: "Build & Test"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v5.2.0
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/develop' }}
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Build
+        run: ./gradlew classes testClasses --no-daemon
+
+      - name: Tests + Coverage
+        run: ./gradlew test jacocoTestReport --no-daemon
+        continue-on-error: false
+
+      - name: Test Report (annotations on PR)
+        uses: dorny/test-reporter@v2.5.0
+        if: always() && github.event_name == 'pull_request'
+        with:
+          name: "JUnit Results"
+          path: "build/test-results/test/*.xml"
+          reporter: java-junit
+
+      - name: Coverage Report (comment on PR)
+        uses: Madrapps/jacoco-report@v1.7.2
+        if: github.event_name == 'pull_request'
+        with:
+          paths: build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 40
+          min-coverage-changed-files: 60
+          title: "Coverage Report"
+          update-comment: true
+
+      - name: Build JAR
+        run: ./gradlew bootJar --no-daemon -x test
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v6.0.0
+        with:
+          name: build-output
+          path: |
+            build/libs/*.jar
+            build/reports/
+          retention-days: 3
+
+  # ============================================
+  # Security Scan
+  # ============================================
+  security-scan:
+    name: "Security Scan"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@0.34.0
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
+          severity: "CRITICAL,HIGH"
+          exit-code: 1
+
+      - name: Upload to GitHub Security
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: "trivy-results.sarif"
+
+  # ============================================
+  # Dependency Review
+  # ============================================
+  dependency-review:
+    name: "Dependency Review"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name == 'pull_request'
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+
+      - name: Review new dependencies
+        uses: actions/dependency-review-action@v4.8.2
+        with:
+          fail-on-severity: critical
+          comment-summary-in-pr: always
+          license-check: true
+          vulnerability-check: true
