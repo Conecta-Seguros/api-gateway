@@ -56,9 +56,10 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(
             ServerHttpSecurity http,
-            GatewayAccessDeniedHandler accessDeniedHandler) {
+            GatewayAccessDeniedHandler accessDeniedHandler,
+            CorsConfigurationSource corsConfigurationSource) {
         return http
-                .cors(Customizer.withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .headers(headers -> headers
                         .frameOptions(frame ->

@@ -1,20 +1,30 @@
 package conectaseguros.co.api.gateway.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockJwt;
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Integration test for {@link SecurityConfig} authorization rules.
@@ -29,8 +39,11 @@ import org.springframework.test.web.reactive.server.WebTestClient;
  * <p>The {@link ReactiveJwtDecoder} is mocked to avoid connecting to Keycloak.
  * Gateway routing and Eureka are disabled via test properties.
  *
- * <p>In Spring Boot 4.0, {@code @AutoConfigureWebTestClient} was removed.
- * {@link WebTestClient} is created manually from the {@link ApplicationContext}.
+ * <p>Most tests use {@link WebTestClient#bindToApplicationContext} with {@code mockJwt()}
+ * for fast in-process verification. The CORS header test uses {@link WebTestClient#bindToServer}
+ * against the real Netty server because Spring Framework 7's {@code CorsUtils.isCorsRequest()}
+ * now performs same-origin detection — which does not behave correctly in the synthetic mock
+ * request context used by {@code bindToApplicationContext}.
  */
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -45,6 +58,9 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 @ActiveProfiles("test")
 class SecurityConfigTest {
 
+    @LocalServerPort
+    private int port;
+
     @Autowired
     private ApplicationContext applicationContext;
 
@@ -56,6 +72,13 @@ class SecurityConfigTest {
 
     private WebTestClient webTestClient() {
         return WebTestClient.bindToApplicationContext(applicationContext)
+                .apply(springSecurity())
+                .build();
+    }
+
+    private WebTestClient serverClient() {
+        return WebTestClient.bindToServer()
+                .baseUrl("http://localhost:" + port)
                 .build();
     }
 
@@ -143,6 +166,18 @@ class SecurityConfigTest {
     @DisplayName("Role-based access control")
     class RoleBasedAccessControl {
 
+        @BeforeEach
+        void configureMockDecoder() {
+            Jwt consultantJwt = Jwt.withTokenValue("test-consultant-token")
+                    .header("alg", "RS256")
+                    .claim("realm_access", Map.of("roles", List.of("CONSULTANT")))
+                    .issuedAt(Instant.now())
+                    .expiresAt(Instant.now().plusSeconds(3600))
+                    .build();
+            given(reactiveJwtDecoder.decode("test-consultant-token"))
+                    .willReturn(Mono.just(consultantJwt));
+        }
+
         @Test
         @DisplayName("CONSULTANT: POST /api/v1/** returns 403 Forbidden")
         void consultantCannotPost() {
@@ -224,12 +259,20 @@ class SecurityConfigTest {
                     .jsonPath("$.path").isEqualTo("/api/v1/clients");
         }
 
+        /**
+         * Uses {@code bindToServer()} against the real Netty server because
+         * Spring Framework 7's {@code CorsUtils.isCorsRequest()} now includes same-origin
+         * detection that does not work correctly in the synthetic request context used by
+         * {@code bindToApplicationContext()}. A real HTTP request from a different port
+         * (Origin: localhost:3000 vs server port) is required for the CORS filter to
+         * correctly classify it as cross-origin and add the ACAO header.
+         */
         @Test
         @DisplayName("CONSULTANT: 403 response includes CORS header when Origin is present")
         void consultantForbiddenHasCorsHeader() {
-            webTestClient()
-                    .mutateWith(mockJwt().authorities(new SimpleGrantedAuthority("ROLE_CONSULTANT")))
+            serverClient()
                     .post().uri("/api/v1/clients")
+                    .header("Authorization", "Bearer test-consultant-token")
                     .header("Origin", "http://localhost:3000")
                     .exchange()
                     .expectStatus().isForbidden()
