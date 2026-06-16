@@ -1,0 +1,112 @@
+version: 2
+
+updates:
+  - package-ecosystem: gradle
+    directory: /
+
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: "America/Bogota"
+
+    open-pull-requests-limit: 8
+
+    reviewers:
+      - "Maicol-19ty"
+
+    assignees:
+      - "Maicol-19ty"
+
+    labels:
+      - "dependencies"
+      - "gradle"
+      - "java"
+
+    commit-message:
+      prefix: "build"
+      prefix-development: "chore"
+
+    groups:
+
+      spring-framework:
+        patterns:
+          - "org.springframework*:*"
+          - "org.springframework.boot*:*"
+          - "org.springframework.cloud*:*"
+          - "org.springframework.security*:*"
+        update-types:
+          - minor
+          - patch
+
+      testing:
+        patterns:
+          - "*junit*"
+          - "*mockito*"
+          - "*assertj*"
+          - "org.springframework.boot:spring-boot-starter-test"
+        update-types:
+          - minor
+          - patch
+
+      production:
+        dependency-type: production
+        update-types:
+          - patch
+
+      gradle-plugins:
+        patterns:
+          - "org.springframework.boot"
+          - "io.spring.dependency-management"
+          - "org.jetbrains.kotlin*"
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: "github-actions"
+    directory: /
+
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: "America/Bogota"
+
+    open-pull-requests-limit: 3
+
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+    commit-message:
+      prefix: "ci"
+
+    groups:
+
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: docker
+    directory: /
+
+    schedule:
+      interval: weekly
+
+    open-pull-requests-limit: 3
+
+    labels:
+      - "dependencies"
+      - "docker"
+
+    groups:
+
+      docker-images:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch

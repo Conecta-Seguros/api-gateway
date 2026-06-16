@@ -10,28 +10,27 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableDiscoveryClient
 public class ApiGatewayApplication {
 
-	static void main(String[] args) {
-
-        String activeProfile = System.getProperty("spring.profiles.active", "default");
-        if ("dev".equals(activeProfile) || isLocalEnvironment()) {
+    static void main(String[] args) {
+        // Load .env for dev profile BEFORE Spring Boot starts
+        if (isDevProfile()) {
             Dotenv dotenv = Dotenv.configure()
                     .directory("./api-gateway")
+                    .ignoreIfMalformed()
                     .ignoreIfMissing()
                     .load();
 
-            setIfPresent("SPRING_OAUTH2_CLIENT_SECRET", dotenv);
-            setIfPresent("SPRING_OAUTH2_CLIENT_ID", dotenv);
+            // Load all OAuth2 related variables from .env
             setIfPresent("SPRING_OAUTH2_ISSUER_URI", dotenv);
+            setIfPresent("SPRING_OAUTH2_CLIENT_ID", dotenv);
+            setIfPresent("SPRING_OAUTH2_CLIENT_SECRET", dotenv);
         }
-        
-		SpringApplication.run(ApiGatewayApplication.class, args);
-	}
 
-    private static void setIfPresent(String key, @NotNull Dotenv dotenv) {
-        String value = dotenv.get(key);
-        if (value != null) {
-            System.setProperty(key, value);
-        }
+        SpringApplication.run(ApiGatewayApplication.class, args);
+    }
+
+    private static boolean isDevProfile() {
+        String activeProfile = System.getProperty("spring.profiles.active", "default");
+        return "dev".equals(activeProfile) || isLocalEnvironment();
     }
 
     private static boolean isLocalEnvironment() {
@@ -39,4 +38,10 @@ public class ApiGatewayApplication {
         return env == null || env.equals("local") || env.equals("development");
     }
 
+    private static void setIfPresent(@NotNull String key, @NotNull Dotenv dotenv) {
+        String value = dotenv.get(key);
+        if (value != null) {
+            System.setProperty(key, value);
+        }
+    }
 }
