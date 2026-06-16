@@ -211,10 +211,10 @@ jobs:
             cd /opt/conecta-seguros-backend || { echo "❌ Directory not found"; exit 1; }
             
             echo "🛑 Stop and remove containers..."
-            docker compose --env-file .env-gateway -f docker-compose-gateway.yml down
+            docker compose -p gateway --env-file .env-gateway -f docker-compose-gateway.yml down
             
             echo "🚀 Start Api Gateway cluster..."
-            docker compose --env-file .env-gateway -f docker-compose-gateway.yml up -d
+            docker compose -p gateway --env-file .env-gateway -f docker-compose-gateway.yml up -d
             
             echo "⏳ Waiting for services to be healthy..."
             sleep 10
