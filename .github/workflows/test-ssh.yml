@@ -20,7 +20,7 @@ jobs:
           SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
 
       - name: 🔐 Test SSH Connection
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
@@ -78,7 +78,7 @@ jobs:
             echo "========================================="
 
       - name: 📋 Test docker-compose config
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
