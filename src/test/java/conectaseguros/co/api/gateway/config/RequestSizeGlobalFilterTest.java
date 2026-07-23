@@ -138,6 +138,67 @@ class RequestSizeGlobalFilterTest {
     }
 
     @Nested
+    @DisplayName("Malformed Content-Length header")
+    class MalformedContentLength {
+
+        @Test
+        @DisplayName("Should reject with 400 instead of throwing when Content-Length is not a number")
+        void rejectsWith400OnUnparseableContentLength() {
+            MockServerHttpRequest request = MockServerHttpRequest.post("/api/v1/news/archivos/cargar")
+                    .header("Content-Length", "not-a-number")
+                    .build();
+            MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+            StepVerifier.create(filter.filter(exchange, chain)).verifyComplete();
+
+            assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+
+        @Test
+        @DisplayName("Should NOT invoke the downstream chain when Content-Length is malformed")
+        void doesNotInvokeChainOnMalformedContentLength() {
+            MockServerHttpRequest request = MockServerHttpRequest.post("/api/v1/news/archivos/cargar")
+                    .header("Content-Length", "not-a-number")
+                    .build();
+            MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+            StepVerifier.create(filter.filter(exchange, chain)).verifyComplete();
+
+            verify(chain, never()).filter(any(ServerWebExchange.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("Error message formatting")
+    class ErrorMessageFormatting {
+
+        @Test
+        @DisplayName("Should render sizes using decimal (1000-based) MB, matching the original filter")
+        void rendersErrorMessageUsingDecimalMegabytes() {
+            // A 5_000_000-byte limit is exactly 5.0 MB in decimal (1000-based) units, but would
+            // render as 4.8 MB under binary (1024-based) units — this pins the conversion base to
+            // the one the original RequestSizeGatewayFilterFactory used (confirmed against real
+            // production evidence: a 31,289,555-byte request against that filter's default limit
+            // rendered as "31.3 MB where permissible limit is 5.0 MB").
+            GatewayLimitsProperties properties = new GatewayLimitsProperties();
+            properties.setMaxRequestSize(DataSize.ofBytes(5_000_000));
+            RequestSizeGlobalFilter decimalFilter = new RequestSizeGlobalFilter(properties);
+
+            MockServerHttpRequest request = MockServerHttpRequest.post("/api/v1/news/archivos/cargar")
+                    .header("Content-Length", "31289555")
+                    .build();
+            MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+            StepVerifier.create(decimalFilter.filter(exchange, chain)).verifyComplete();
+
+            String errorMessage = exchange.getResponse().getHeaders().getFirst("errorMessage");
+            assertThat(errorMessage)
+                    .contains("Request size is 31.3 MB")
+                    .contains("permissible limit is 5.0 MB");
+        }
+    }
+
+    @Nested
     @DisplayName("Filter ordering")
     class FilterOrdering {
 

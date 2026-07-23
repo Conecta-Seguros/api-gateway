@@ -1,5 +1,6 @@
 package conectaseguros.co.api.gateway.config;
 
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -49,7 +50,17 @@ public class RequestSizeGlobalFilter implements GlobalFilter, Ordered {
         String contentLength = request.getHeaders().getFirst(CONTENT_LENGTH_HEADER);
 
         if (!ObjectUtils.isEmpty(contentLength)) {
-            long requestSizeBytes = Long.parseLong(contentLength);
+            long requestSizeBytes;
+            try {
+                requestSizeBytes = Long.parseLong(contentLength);
+            } catch (NumberFormatException e) {
+                log.warn(
+                        "Rejecting request to {}: malformed Content-Length header '{}'",
+                        exchange.getRequest().getPath(),
+                        contentLength);
+                exchange.getResponse().setStatusCode(HttpStatus.BAD_REQUEST);
+                return exchange.getResponse().setComplete();
+            }
             long maxRequestSizeBytes = gatewayLimitsProperties.getMaxRequestSize().toBytes();
 
             if (requestSizeBytes > maxRequestSizeBytes) {
@@ -83,7 +94,10 @@ public class RequestSizeGlobalFilter implements GlobalFilter, Ordered {
     }
 
     private String toReadableSize(long bytes) {
-        return String.format("%.1f MB", bytes / (1024.0 * 1024.0));
+        // Locale.US pins the decimal separator to '.' regardless of the JVM's default locale
+        // (e.g. a server defaulting to es_ES would otherwise render "31,3 MB"), keeping the
+        // errorMessage format stable for any client parsing it.
+        return String.format(Locale.US, "%.1f MB", bytes / (1000.0 * 1000.0));
     }
 
     @Override

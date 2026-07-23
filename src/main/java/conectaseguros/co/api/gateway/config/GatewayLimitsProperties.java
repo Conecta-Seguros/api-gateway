@@ -25,6 +25,10 @@ public class GatewayLimitsProperties {
     }
 
     public void setMaxRequestSize(DataSize maxRequestSize) {
+        if (maxRequestSize == null || maxRequestSize.toBytes() <= 0) {
+            throw new IllegalArgumentException(
+                    "app.gateway.max-request-size must be a positive DataSize, got: " + maxRequestSize);
+        }
         this.maxRequestSize = maxRequestSize;
     }
 }
