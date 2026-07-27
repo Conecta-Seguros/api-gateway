@@ -78,7 +78,7 @@ dependencyManagement {
         dependency("org.springframework.boot:spring-boot-configuration-metadata:4.0.3")
         dependency("org.springframework.security:spring-security-oauth2-jose:7.0.4")
         dependency("org.jetbrains:annotations:26.1.0")
-        dependency("com.github.ben-manes.caffeine:caffeine:3.2.3")
+        dependency("com.github.ben-manes.caffeine:caffeine:3.2.4")
 	}
 }
 
