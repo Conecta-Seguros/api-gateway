@@ -1,6 +1,6 @@
 plugins {
 	java
-	id("org.springframework.boot") version "4.0.3"
+	id("org.springframework.boot") version "4.1.0"
 	id("io.spring.dependency-management") version "1.1.7"
 	jacoco
 }
@@ -75,7 +75,7 @@ dependencyManagement {
 	}
 	dependencies {
 		dependency("io.github.cdimascio:dotenv-java:3.2.0")
-        dependency("org.springframework.boot:spring-boot-configuration-metadata:4.0.3")
+        dependency("org.springframework.boot:spring-boot-configuration-metadata:4.1.0")
         dependency("org.springframework.security:spring-security-oauth2-jose:7.0.4")
         dependency("org.jetbrains:annotations:26.1.0")
         dependency("com.github.ben-manes.caffeine:caffeine:3.2.3")
